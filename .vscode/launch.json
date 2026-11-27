@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {"name": "Dashboard (Streamlit)", "type": "debugpy", "request": "launch", "module": "streamlit",
+     "args": ["run", "app.py"], "cwd": "${workspaceFolder}"},
+    {"name": "Download data (all)", "type": "debugpy", "request": "launch",
+     "program": "${workspaceFolder}/scripts/download_data.py", "args": ["--all"], "console": "integratedTerminal"},
+    {"name": "Train models + 2-year backtest", "type": "debugpy", "request": "launch",
+     "program": "${workspaceFolder}/scripts/train.py", "console": "integratedTerminal"},
+    {"name": "Daily job", "type": "debugpy", "request": "launch",
+     "program": "${workspaceFolder}/scripts/daily.py", "console": "integratedTerminal"}
+  ]
+}

@@ -1,0 +1,33 @@
+# Stock Analyzer theme: dark trading-desk look
+[theme]
+base = "dark"
+primaryColor = "#4C8DF6"
+backgroundColor = "#0B0E13"
+secondaryBackgroundColor = "#141920"
+textColor = "#E6E8EC"
+linkColor = "#7AA9FA"
+borderColor = "#232A35"
+dataframeBorderColor = "#1E242E"
+dataframeHeaderBackgroundColor = "#11151C"
+showWidgetBorder = true
+showSidebarBorder = true
+baseRadius = "6px"
+buttonRadius = "6px"
+baseFontSize = 14
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+headingFontWeights = [700, 600, 600, 600, 600, 600]
+headingFontSizes = ["1.75rem", "1.25rem", "1.05rem", "0.95rem", "0.9rem", "0.85rem"]
+chartCategoricalColors = ["#4C8DF6", "#F0883E", "#2EB67D", "#E3B341", "#D96BA6", "#8B7CF6", "#56B6C2", "#E5534B"]
+
+[theme.sidebar]
+backgroundColor = "#0F1319"
+secondaryBackgroundColor = "#161B23"
+borderColor = "#1E242E"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
