@@ -1,6 +1,8 @@
 """Shared Streamlit helpers: cached loaders, chart styling, formatting."""
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -295,12 +297,51 @@ def money(v):
     return f"${v:,.0f}"
 
 
-def ticker_label(t: str) -> str:
+_NAME_JUNK = re.compile(
+    r"\s*[-,]?\s*(new\s+)?(class [a-z]\s+)?(common stock|ordinary shares|common shares|subordinate voting shares|"
+    r"american depositary shares?.*|ads.*|depositary shares.*|shares of beneficial interest|units?)\b.*$", re.I)
+# well-known names people type that aren't in the official company name
+ALIASES = {"GOOGL": "Google", "GOOG": "Google", "META": "Facebook", "BRK-B": "Berkshire", "BRK-A": "Berkshire",
+           "KO": "Coke", "JPM": "Chase", "TSM": "TSMC", "BABA": "Alibaba", "XOM": "Exxon", "WMT": "Walmart",
+           "LLY": "Lilly", "UNH": "UnitedHealth", "BAC": "BofA", "MCD": "McDonalds", "HD": "Home Depot",
+           "PG": "P&G", "JNJ": "J&J", "BA": "Boeing", "F": "Ford", "GM": "General Motors", "T": "AT&T"}
+
+
+def clean_name(name: str) -> str:
+    """'NVIDIA Corporation - Common Stock' → 'NVIDIA Corporation'."""
+    if not isinstance(name, str):
+        return ""
+    n = _NAME_JUNK.sub("", name).strip(" ,-")
+    n = re.sub(r"\s*\(The\)", "", n)
+    return n or name
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def name_map() -> dict:
     u = universe()
     if u.empty:
-        return t
-    m = u.loc[u["ticker"] == t, "name"]
-    return f"{t} · {m.iloc[0][:40]}" if len(m) else t
+        return {}
+    return {t: clean_name(n) for t, n in zip(u["ticker"], u["name"])}
+
+
+def ticker_label(t: str) -> str:
+    """Shown in every stock picker. Typing filters on the whole label, so either the
+    ticker (NVDA) or any part of the company name (nvidia) finds the stock."""
+    n = name_map().get(t, "")
+    a = ALIASES.get(t)
+    if a and a.lower() not in n.lower():
+        n = f"{n} ({a})" if n else a
+    return f"{t} — {n}" if n else t
+
+
+def all_tickers() -> list[str]:
+    """Every stock that has predictions, falling back to the whole universe."""
+    seen = []
+    for h in available_horizons():
+        p = latest(h)
+        if not p.empty:
+            seen = sorted(set(seen) | set(p["ticker"]))
+    return seen or sorted(universe()["ticker"].tolist())
 
 
 def needs_data():

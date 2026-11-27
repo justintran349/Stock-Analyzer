@@ -29,7 +29,10 @@ def _filters(h: str):
                               help="Earnings inside the window make moves bigger.")
         c2 = st.columns([1.3, 1, 3.4])
         n = c2[0].slider("Picks per side", 3, 50, 10, key=f"n_{h}")
-        search = c2[2].text_input("Tickers", key=f"search_{h}", placeholder="Filter by ticker, e.g. GE, F, BA")
+        search = c2[2].multiselect("Only these stocks", ui.all_tickers(), key=f"search_{h}",
+                                   format_func=ui.ticker_label,
+                                   placeholder="Type a company or ticker, e.g. Ford or F",
+                                   help="Start typing a company name or ticker; pick as many as you like.")
         tested = c2[1].toggle("Proven levels", value=True, key=f"tested_{h}",
                               help="Only show confidence levels that were right more than half the time in the 2-year test.")
     return dict(min_conf=min_conf, min_price=min_price, min_dv=DV_CHOICES[dv], earn=earn, sort=sort,
@@ -45,16 +48,15 @@ def apply_filters(df: pd.DataFrame, f: dict, h: str) -> pd.DataFrame:
         d = d[within] if f["earn"] == "Within horizon" else d[~within]
     if f["tested"] and d["tested_hit_rate"].notna().any():
         d = d[d["tested_hit_rate"].isna() | (d["tested_hit_rate"] > 0.5)]
-    if f["search"].strip():
-        want = [t.strip().upper() for t in f["search"].split(",") if t.strip()]
-        d = d[d["ticker"].isin(want)]
+    if f["search"]:
+        d = d[d["ticker"].isin(f["search"])]
     return d
 
 
 def _card(r: pd.Series, h: str, rows: pd.DataFrame, side: str, beat_mode: bool = False):
     chance = r["p_up"] if side == "UP" else 1 - r["p_up"]
     word = ("beat S&P" if side == "UP" else "lag S&P") if beat_mode else ("chance up" if side == "UP" else "chance down")
-    name = html.escape(r.get("name")) if isinstance(r.get("name"), str) else ""
+    name = html.escape(ui.name_map().get(r["ticker"], "") or (r.get("name") if isinstance(r.get("name"), str) else ""))
     hr = r.get("tested_hit_rate")
     other = r.get("p_up_direction") if beat_mode else r.get("p_beat")
     stats = [("Price", f"${r['close']:,.2f}"), ("Exp. return", ui.pct(r["exp_ret"])),

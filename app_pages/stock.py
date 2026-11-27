@@ -109,7 +109,8 @@ def render():
     default = st.session_state.get("ticker")
     idx = tickers.index(default) if default in tickers else 0
     head = st.container()
-    ticker = st.selectbox("Stock", tickers, index=idx, format_func=ui.ticker_label, label_visibility="collapsed")
+    ticker = st.selectbox("Stock", tickers, index=idx, format_func=ui.ticker_label, label_visibility="collapsed",
+                          placeholder="Search a company or ticker, e.g. Boeing or BA")
     st.session_state["ticker"] = ticker
     px = ui.daily_prices((ticker,))
     secs = ui.sectors()
@@ -130,10 +131,11 @@ def render():
         meta = (f"<b style='font-size:1.35rem'>${last:,.2f}</b> "
                 f"<span style='color:{tone};font-weight:600'>{chg:+.2f}%</span><br>"
                 f"close {px['date'].iloc[-1]:%b %d, %Y}")
-    name = ui.ticker_label(ticker).split(" · ", 1)
+    import html as _html
+    name = _html.escape(ui.name_map().get(ticker, ""))
     with head:
-        ui.page_header(f"{ticker} <span style='color:#8B93A1;font-weight:500;font-size:1.05rem'>"
-                       f"{name[1] if len(name) > 1 else ''}</span>", sub, kicker="Stock analyzer", meta=meta)
+        ui.page_header(f"{ticker} <span style='color:#8B93A1;font-weight:500;font-size:1.05rem'>{name}</span>",
+                       sub, kicker="Stock analyzer", meta=meta)
     if peers_txt:
         st.caption(peers_txt)
 

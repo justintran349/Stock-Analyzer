@@ -38,10 +38,24 @@ with st.sidebar:
         f'{n_models}/{len(config.HORIZONS)} models · data {last or "not loaded"}</div></div>',
         unsafe_allow_html=True)
 
+def _go_to_stock():
+    pick = st.session_state.get("global_search")
+    if pick:
+        st.session_state["ticker"] = pick
+        st.session_state["_open_stock"] = True
+    st.session_state["global_search"] = None
+
+
+with st.sidebar:
+    st.selectbox("Search", ui.all_tickers(), index=None, key="global_search", format_func=ui.ticker_label,
+                 placeholder="Search company or ticker", label_visibility="collapsed", on_change=_go_to_stock)
+
 nav = st.navigation({
     "Predict": [PAGES["top"], PAGES["stock"], PAGES["options"]],
     "Research": [PAGES["events"], PAGES["links"], PAGES["charts"]],
     "Validate": [PAGES["backtest"], PAGES["tracker"], PAGES["data"]],
 })
 st.sidebar.caption("Research tool, not financial advice. Past patterns can stop working.")
+if st.session_state.pop("_open_stock", False):
+    st.switch_page(PAGES["stock"])
 nav.run()
